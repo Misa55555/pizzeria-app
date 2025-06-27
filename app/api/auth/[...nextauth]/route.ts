@@ -69,7 +69,7 @@ export const authOptions: AuthOptions = {
       // Si el inicio de sesión es con Google
       if (account?.provider === "google") {
         // Lista de emails de administradores autorizados
-        const allowedEmails = ["admin@pizzeria.com", "misa132456@gmail.com"];
+        const allowedEmails = ["admin@pizzeria.com", "misa132456@gmail.com", "joeloliva@iresm.edu.ar"];
         
         // Si el email del usuario que intenta loguearse está en la lista, permite el acceso.
         if (user.email && allowedEmails.includes(user.email)) {
