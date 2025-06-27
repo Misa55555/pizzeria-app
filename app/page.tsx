@@ -21,7 +21,8 @@ export default async function HomePage() {
       name: 'asc', // Ordenamos los productos alfabéticamente
     }
   });
-
+  
+  console.log("Productos obtenidos de la base de datos:", products);
   return (
     <div className="min-vh-100 bg-light">
       {/* Header */}
