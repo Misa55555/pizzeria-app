@@ -5,7 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// Función para manejar peticiones PATCH (actualizaciones parciales)
+// La función PATCH para actualizar está bien, la mantenemos como está.
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
@@ -16,22 +16,16 @@ export async function PATCH(
   }
 
   const id = params.id;
-  // Ahora el cuerpo puede tener CUALQUIER campo del producto
   const body = await request.json(); 
-  // === INICIA LA VALIDACIÓN ===
-  // Si el stock viene en el body y es menor que 0, devolvemos un error.
+
   if (body.stock !== undefined && body.stock < 0) {
     return new NextResponse("El stock no puede ser un número negativo", { status: 400 });
   }
 
   try {
-    // Usamos desestructuración para crear un nuevo objeto 'updateData'
-    // que contiene todo lo de 'body' EXCEPTO las propiedades 'id' y 'category'.
     const { id: productId, category, ...updateData } = body;
-
     const updatedProduct = await prisma.product.update({
       where: { id: id },
-      // Ahora solo pasamos los datos que sí se pueden actualizar.
       data: updateData, 
     });
     return NextResponse.json(updatedProduct, { status: 200 });
@@ -41,6 +35,9 @@ export async function PATCH(
   }
 }
 
+// =======================================================
+// ESTA ES LA FUNCIÓN CORREGIDA
+// =======================================================
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
@@ -54,12 +51,27 @@ export async function DELETE(
   const id = params.id;
 
   try {
-    // 2. Lógica de la Base de Datos: Eliminamos el producto por su ID
+    // 2. ANTES de borrar, verificamos si el producto está en algún pedido
+    const orderItemsCount = await prisma.orderItem.count({
+      where: {
+        productId: id,
+      },
+    });
+
+    // 3. Si el contador es mayor que 0, el producto ha sido pedido. Devolvemos un error.
+    if (orderItemsCount > 0) {
+      return new NextResponse(
+        "No se puede eliminar un producto que ya forma parte de un pedido.",
+        { status: 409 } // 409 Conflict es un buen código para esta situación
+      );
+    }
+
+    // 4. Si el contador es 0, procedemos a eliminar el producto.
     await prisma.product.delete({
       where: { id: id },
     });
 
-    // 3. Respuesta: Enviamos una confirmación de que todo salió bien
+    // Enviamos una confirmación de éxito.
     return NextResponse.json({ message: "Producto eliminado" }, { status: 200 });
 
   } catch (error) {

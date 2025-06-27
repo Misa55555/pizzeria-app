@@ -1,5 +1,5 @@
 // app/page.tsx
-
+export const dynamic = 'force-dynamic';
 // 1. Importamos Prisma para acceder a la base de datos y Link para la navegación
 import prisma from "@/lib/prisma";
 import Link from "next/link";

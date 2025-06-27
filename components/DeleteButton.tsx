@@ -13,33 +13,35 @@ export default function DeleteButton({ productId }: DeleteButtonProps) {
   const router = useRouter();
 
   const handleDelete = async () => {
-    // 1. Mostramos una ventana de confirmación nativa del navegador
     const confirmed = window.confirm(
       "¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer."
     );
 
-    // 2. Si el usuario no confirma, no hacemos nada
     if (!confirmed) {
       return;
     }
 
     setIsLoading(true);
     try {
-      // 3. Si confirma, llamamos a nuestra API de eliminación
       const response = await fetch(`/api/products/${productId}`, {
         method: "DELETE",
       });
 
+      // Si la respuesta NO fue exitosa (ej. 409 Conflict)
       if (!response.ok) {
-        throw new Error("Error al eliminar el producto");
+        // Leemos el mensaje de error que nos envió la API
+        const errorText = await response.text();
+        // Lanzamos un error con ese mensaje específico
+        throw new Error(errorText || "Error al eliminar el producto");
       }
 
-      // 4. Refrescamos los datos de la página para que la fila eliminada desaparezca
+      // Si todo fue bien, refrescamos la página
       router.refresh();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("No se pudo eliminar el producto.");
+      // Mostramos el mensaje de error específico en la alerta
+      alert(error.message);
     } finally {
       setIsLoading(false);
     }
